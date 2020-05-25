@@ -1,0 +1,52 @@
+Use Google sheets as backend lol
+https://medium.com/@dmccoy/how-to-submit-an-html-form-to-google-sheets-without-google-forms-b833952cc175
+
+Then we can host it statically?? 
+
+
+The URL of the form
+https://script.google.com/macros/s/AKfycbwYrMYUdHhgfUC-jMoGzBE2lbz48oPVIsfnkrs1PAVP4ece8Qw/exec
+
+
+Dude this is a GAMECHANGER....
+We can log the adventures in cog biases results & analyze them??
+Zomg lol
+
+Maybe to make this more secure... should use a different gmail account? 
+
+
+
+---
+
+hm... want to be able to hold down and spread money all over the screen
+currently
+
+want to animate the U.S. final budget
+zoom out as it is allocating
+make sure defense is visible
+
+consider decreasing the number of depts?
+
+
+---
+
+TODO
+
+put the div with mousedown/up events around the second section.
+
+Can use urlParams to make it shareable...
+So people can link to what they think the budget should be. 
+
+
+hmm.... what to do about defense?? 
+it doesn't fit on the screen.
+may need to convert to SVG so we can zoom
+http://www.petercollingridge.co.uk/tutorials/svg/interactive/pan-and-zoom/
+
+log people's answers to google sheets
+
+animate the final view
+this could be a static SVG -- unclear if we want to reuse magic-bar or not
+
+--
+let's get this committed to github
