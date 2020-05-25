@@ -24,6 +24,16 @@ html, body, #app{
   color: white;
 }
 
+.fade-enter-active{
+  transition: opacity 1s;
+}
+
+.fade-leave-active{
+  transition: opacity 0s;
+}
+.fade-enter, .fade-leave-to{
+  opacity: 0;
+}
 
 h1, h1 *{
   font-size: 40px;
@@ -57,9 +67,6 @@ button{
   position:absolute; 
   height:100%; 
   width:100%; 
-  background-color: #fcdb03; 
-  color: black;
-  opacity: 0.8; 
   z-index: 1;
 
   display: flex;
@@ -67,14 +74,18 @@ button{
   align-items: center;
   font-weight: bold;
     user-select: none;
+  font-size: 16px;
 }
 
-.instruction span{
+.instruction div{
   font-size: 16px;
   position:relative;
   z-index: 2;  
   padding: 8px;
     user-select: none;
+    color:black;
+    background-color:#fcdb03;
+    color: black;
 }
 
 button{
@@ -109,14 +120,17 @@ button{
          style="position:relative"
   >
     <div v-if="showInstructionsToAdd" class="instruction">
-      <span style="background-color:black; color:white">Drag here to allocate money</span>
+      <div>Drag anywhere to allocate money</div>
     </div>
 
-    <div v-if="showInstructionsToRemove" class="instruction"
-        @mousedown="showInstructionsToRemove=false"
-        style="width: 50px; height:100%; left: -60px; writing-mode: vertical-rl; transform: rotate(180deg);">
-      <span style="background-color:black; color:white">Drag here to take money away</span>
-    </div>
+    <transition name="fade">
+      <div class="instruction"
+          v-if="showInstructionsToRemove"
+          @mousedown="showInstructionsToRemove=false"
+          style="width: 50px; height:100%; left: -60px; writing-mode: vertical-rl; transform: rotate(180deg); background-color: #fcdb03; color:black">
+          Drag here to take money away
+      </div>
+    </transition>
 
     <magic-bar v-for="(amount, dept) in allocation.your" section="your"
     :key="'0' + dept" :name="dept" :num-units="Math.max(1, Math.round(amount))"
@@ -335,7 +349,7 @@ new Vue({
     }
   },
   data: {
-    debug: false,
+    debug: true,
     stage: 0,
     activeDept: null,
     showInstructionsToAdd: true,
