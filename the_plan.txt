@@ -39,14 +39,6 @@ log people's answers to google sheets
 
 TODO
 
-
-bugs:
-should block next button until all money is allocated
-prevent going negative
-
-
----
-
 USER TEST:
 
 do we want to add descriptions of what the things do??

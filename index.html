@@ -76,6 +76,14 @@ button{
   padding: 8px;
     user-select: none;
 }
+
+button{
+  font-size: 20px;
+}
+
+.feedback{
+  margin-bottom: 16px;
+}
 </style>
 
 </head>
@@ -115,7 +123,10 @@ button{
     </magic-bar>
   </div>
 
-  <button @click="goToStage(1)">Next</button>
+  <div id="stage0-complete" v-show="debug || budgetRemaining.your == 0">
+    <div class="feedback">No money left. Good spending!</div>
+    <button @click="goToStage(1)">Next</button>
+  </div>
 
   <div id="stage1" v-show="stage >= 1 || debug"
          @mousedown="setIsDragging(1, true)" 
@@ -132,7 +143,10 @@ button{
                  :style="magicBarStyle()">
     </magic-bar>
 
-    <button @click="goToStage(2)">Next</button>
+    <div>
+      <div class="feedback">No budget left. Estimate complete!</div>
+      <button @click="goToStage(2)">Next</button>
+    </div>
 
   </div>
 
@@ -268,7 +282,7 @@ new Vue({
 
   computed: {
     budgetRemaining(){
-      const total = _.sum(_.values(trueDeptToBillions));
+      const total = 100; //_.sum(_.values(trueDeptToBillions));
       return {
         'your': total - _.sum(_.values(this.allocation['your'])), 
         'predicted': total - _.sum(_.values(this.allocation['predicted'])), 
@@ -285,6 +299,20 @@ new Vue({
     }
   },
   watch: {
+    'budgetRemaining.your': async function(){
+      if (this.budgetRemaining.your == 0){
+        await wait(100); // need this so v-show triggers first
+        this.scrollTo('stage0-complete'); 
+      }
+    },
+
+    'budgetRemaining.predicted': async function(){
+      if (this.budgetRemaining.predicted == 0){
+        await wait(100); // need this so v-show triggers first
+        this.scrollTo('stage1-complete');
+      }
+    },
+
     isDragging(){
       if (this.isDragging){
         const this_ = this;
@@ -332,7 +360,8 @@ new Vue({
       }
 
       const oldValue = this.allocation[this.activeSection][this.activeDept];
-      const newValue = Math.max(1, oldValue + this.deltaAmount);
+      const delta = Math.min(this.deltaAmount, this.budgetRemaining[this.activeSection]);
+      const newValue = Math.max(1, oldValue + delta);
 
       if (isNaN(newValue)){
         debugger;
@@ -354,7 +383,7 @@ new Vue({
       this.stage = stageNum; 
 
       await wait(100);
-      document.getElementById('stage' + stageNum).scrollIntoView({behavior: 'smooth'});
+      this.scrollTo('stage' + stageNum);
     },
     magicBarStyle(){
       return {
@@ -367,6 +396,10 @@ new Vue({
       if (this.stage == stageOfSection){
         this.isDragging = value;
       }
+    },
+    scrollTo(id){
+      console.log('scrolling to ' + id);
+      document.getElementById(id).scrollIntoView({behavior: 'smooth'});      
     }
   }
 });
