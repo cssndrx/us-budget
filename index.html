@@ -83,6 +83,8 @@ button{
 
 .feedback{
   margin-bottom: 16px;
+  padding: 8px; 
+  color:black;
 }
 </style>
 
@@ -123,8 +125,8 @@ button{
     </magic-bar>
   </div>
 
-  <div id="stage0-complete" v-show="debug || budgetRemaining.your == 0">
-    <div class="feedback">No money left. Good spending!</div>
+  <div id="stage0-complete" v-show="budgetRemaining.your == 0">
+    <div class="feedback" style="background-color: #fcdb03;">No money left. Good spending!</div>
     <button @click="goToStage(1)">Next</button>
   </div>
 
@@ -143,8 +145,8 @@ button{
                  :style="magicBarStyle()">
     </magic-bar>
 
-    <div>
-      <div class="feedback">No budget left. Estimate complete!</div>
+    <div id="stage1-complete" v-show="budgetRemaining.predicted == 0">
+      <div class="feedback" style="background-color: #347deb">No budget left. Estimate complete!</div>
       <button @click="goToStage(2)">Next</button>
     </div>
 
