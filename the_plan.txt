@@ -27,15 +27,36 @@ make sure defense is visible
 
 consider decreasing the number of depts?
 
+---
+FINAL POLISH
+Can use urlParams to make it shareable...
+So people can link to what they think the budget should be. 
+
+log people's answers to google sheets
+
 
 ---
 
 TODO
 
-put the div with mousedown/up events around the second section.
 
-Can use urlParams to make it shareable...
-So people can link to what they think the budget should be. 
+bugs:
+should block next button until all money is allocated
+prevent going negative
+
+
+---
+
+USER TEST:
+
+do we want to add descriptions of what the things do??
+
+make the thing smaller -- it's currently too big and you can't see everything on the screen
+
+should this be zoomable
+
+probably want to user test this...
+push this to github and see if it works on mobile
 
 
 hmm.... what to do about defense?? 
@@ -43,10 +64,13 @@ it doesn't fit on the screen.
 may need to convert to SVG so we can zoom
 http://www.petercollingridge.co.uk/tutorials/svg/interactive/pan-and-zoom/
 
-log people's answers to google sheets
 
 animate the final view
 this could be a static SVG -- unclear if we want to reuse magic-bar or not
-
+hm... this doesn't fit on one page
 --
-let's get this committed to github
+
+invalid arr bug is still happening
+
+
+

@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="js/lodash.min.js"></script>
 <script src="js/d3.v5.min.js"></script>
-<script src="js/vue.min.js"></script>
+<script src="js/vue.js"></script>
 
 <style>
 
@@ -25,32 +25,15 @@ html, body, #app{
 }
 
 
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 1s;
-}
-.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
-
-.smaller, .smaller *{
-  font-size: 16px;
-}
-
-
 h1, h1 *{
   font-size: 60px;
-}
-
-.no-select, .no-select *{
-  user-select: none;
 }
 
 .magic-bar, .magic-bar *{
     user-select: none;
 }
 .your{
-  color: white;
+  color: #fcdb03;
 }
 
 .predicted{
@@ -59,6 +42,39 @@ h1, h1 *{
 
 .true{
   color: red;
+}
+
+button{
+  color:black;
+}
+
+.dept, .dept *{
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.instruction{
+  position:absolute; 
+  height:100%; 
+  width:100%; 
+  background-color: #fcdb03; 
+  color: black;
+  opacity: 0.8; 
+  z-index: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+    user-select: none;
+}
+
+.instruction span{
+  font-size: 20px;
+  position:relative;
+  z-index: 2;  
+  padding: 8px;
+    user-select: none;
 }
 </style>
 
@@ -70,57 +86,81 @@ h1, h1 *{
 <div id="app">
 <div style="position:relative; padding: 16px; margin-left:100px">
 
-  <h1 class="your">If you were President, how would you allocate the U.S. budget?</h1>
+  <h1>If you were President, how would you <span class="your">allocate</span> the U.S. budget?</h1>
 
-  <div>Tap to allocate {{budgetRemaining.your}} billion dollars</div>
+  <div class="dept" style="margin-bottom: 16px"><span class="your">${{budgetRemaining.your}} billion</span> remaining</div>
 
-  {{deltaAmount}} {{activeDept}} {{isDragging}}
-  <div style="position:relative">
-    <div   @mousedown="isDragging = true" 
-           @mouseup="isDragging = false" 
-           @touchstart="isDragging = true"
-           @touchend="isDragging = false"
-           @contextmenu="isDragging = false"
-           style="border: 1px solid red; "
-    >
-
-      <magic-bar v-for="(amount, dept) in allocation.your" section="your" :name="dept" :num-units="Math.max(1, Math.round(amount))"
-      @mousemove-from-bar="mousemoveFromBar"
-      style="position:relative;"
-      :style="{left: -1 * sizeOfLeft + 'px'}">
-      </magic-bar>
+  <!-- {{deltaAmount}} {{activeDept}} {{isDragging}} -->
+  <div   @mousedown="setIsDragging(0, true)" 
+         @mouseup="setIsDragging(0, false)" 
+         @touchstart="setIsDragging(0, true)"
+         @touchend="setIsDragging(0, false)"
+         @contextmenu="setIsDragging(0, false)"
+         style="position:relative"
+  >
+    <div v-if="showInstructionsToAdd" class="instruction">
+      <span style="background-color:black; color:white">Drag here to allocate money</span>
     </div>
 
+    <div v-if="showInstructionsToRemove" class="instruction"
+        @mousedown="showInstructionsToRemove=false"
+        style="width: 50px; height:100%; left: -60px; writing-mode: vertical-rl; transform: rotate(180deg);">
+      <span style="background-color:black; color:white">Drag here to take money away</span>
+    </div>
+
+    <magic-bar v-for="(amount, dept) in allocation.your" section="your"
+    :key="'0' + dept" :name="dept" :num-units="Math.max(1, Math.round(amount))"
+    :style="magicBarStyle()"
+    @mousemove-from-bar="mousemoveFromBar">
+    </magic-bar>
   </div>
 
-  <h1>How do you <span class="predicted">think</span> America allocates its budget?</h1>
-  <magic-bar v-for="(amount, dept) in allocation.predicted" 
-               :references="['your']"
-               section="predicted" :name="dept" :num-units="amount"
-               @mousemove-from-bar="mousemoveFromBar">
-  </magic-bar>
+  <button @click="goToStage(1)">Next</button>
 
-  <h1>This is how <span class="true">America</span> actually allocates its budget</h1>
+  <div id="stage1" v-show="stage >= 1 || debug"
+         @mousedown="setIsDragging(1, true)" 
+         @mouseup="setIsDragging(1, false)" 
+         @touchstart="setIsDragging(1, true)"
+         @touchend="setIsDragging(1, false)"
+         @contextmenu="setIsDragging(1, false)">
+    <h1>How do you <span class="predicted">think</span> America allocates its budget?</h1>
+    <!--                  :references="['your']" -->
+    <magic-bar v-for="(amount, dept) in allocation.predicted" 
+                 :key="'1' + dept" 
+                 section="predicted" :name="dept" :num-units="amount"
+                 @mousemove-from-bar="mousemoveFromBar"
+                 :style="magicBarStyle()">
+    </magic-bar>
 
-  <div style="margin-bottom: 16px">
-    <div>$: Your ideal allocation</div>
-    <div class="predicted">$: Your predicted U.S. allocation</div>
-    <div class="true">$: Actual U.S. allocation</div>
+    <button @click="goToStage(2)">Next</button>
+
   </div>
-  <magic-bar v-for="(amount, dept) in allocation.true" 
-             :references="['your', 'predicted']"
-             section="true" :name="dept" :num-units="amount">
-  </magic-bar>
+
+  <div id="stage2" v-show="stage >= 2 || debug">
+    <h1>This is how <span class="true">America</span> actually allocates its budget</h1>
+
+    <div style="margin-bottom: 16px">
+      <div class="your">$: Your ideal allocation</div>
+      <div class="predicted">$: Your predicted U.S. allocation</div>
+      <div class="true">$: Actual U.S. allocation</div>
+    </div>
+    <magic-bar v-for="(amount, dept) in allocation.true" 
+               :key="'2' + dept" 
+               :references="['your', 'predicted']"
+               section="true" :name="dept" :num-units="amount"
+               :style="magicBarStyle()">
+    </magic-bar>
+  </div>
 
 </div> <!-- end center div -->
 </div> <!-- end #app -->
 
 <script type="text/x-template" id="magic-bar-template">
-<div class="magic-bar" style="width:100%; margin-bottom: 8px; border:1px solid blue;"
+<div class="magic-bar" style="width:100%; margin-bottom: 8px;"
        :style="{'padding-left': $root.sizeOfLeft + 'px'}"
        @mousemove="mousemove""> <!-- outer div is the invisible container listening to mousepress events -->
 
-  <div>{{name}} ${{numUnits}} billion </div>
+  <div class="dept">{{name}} ${{numUnits}} billion</div>
 
   <!-- reference -->
   <div v-for="reference in references">
@@ -157,7 +197,7 @@ var trueDeptToBillions = {
 'Justice': 29.2,
 'Labor': 10.9,
 'State & Intern': 40,
-'Transportation*': 21.4,
+'Transportation': 21.4,
 'Treasury': 12.7,
 'Veterans Affairs': 93.1,
 'Civil Works': 4.8,
@@ -239,6 +279,9 @@ new Vue({
         return 0;
       }
       return this.positiveOrNegative > 0 ? this.positiveOrNegative * this.amountPerDollar : -1;
+    },
+    activeSection(){
+      return ['your', 'predicted', 'true'][this.stage];
     }
   },
   watch: {
@@ -255,11 +298,18 @@ new Vue({
           clearInterval(this.autoFlipper);
         }
       }
+    },
+    async showInstructionsToAdd(){
+      await wait(5000);
+      this.showInstructionsToRemove = true;
     }
   },
   data: {
-    activeSection: 'your',
+    debug: false,
+    stage: 0,
     activeDept: null,
+    showInstructionsToAdd: true,
+    showInstructionsToRemove: false,
 
     isDragging: false,
     autoFlipper: null,
@@ -277,8 +327,17 @@ new Vue({
         return;
       }
 
+      if (!this.activeDept){
+        return;
+      }
+
       const oldValue = this.allocation[this.activeSection][this.activeDept];
-      this.allocation[this.activeSection][this.activeDept] = Math.max(1, oldValue + this.deltaAmount);
+      const newValue = Math.max(1, oldValue + this.deltaAmount);
+
+      if (isNaN(newValue)){
+        debugger;
+      }
+      this.allocation[this.activeSection][this.activeDept] = newValue;
     },
 
     mousemoveFromBar(params){
@@ -286,9 +345,28 @@ new Vue({
         return;
       }
 
-      this.activeSection = params.section;
+      //this.activeSection = params.section;
       this.activeDept = params.name;
       this.positiveOrNegative = params.positiveOrNegative;
+    },
+    async goToStage(stageNum){
+      this.isDragging = false;
+      this.stage = stageNum; 
+
+      await wait(100);
+      document.getElementById('stage' + stageNum).scrollIntoView({behavior: 'smooth'});
+    },
+    magicBarStyle(){
+      return {
+        position: 'relative',
+        left: -1 * this.sizeOfLeft + 'px'
+      };
+    },
+    setIsDragging(stageOfSection, value){
+      this.showInstructionsToAdd = false;
+      if (this.stage == stageOfSection){
+        this.isDragging = value;
+      }
     }
   }
 });
